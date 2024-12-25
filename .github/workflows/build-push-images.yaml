@@ -24,6 +24,11 @@ on:
         default: '["amd64", "arm64"]'
         type: string
         required: false
+      build-args:
+        description: "Build args to be passed to buildah bud. Separate arguments by newline."
+        default: ""
+        required: false
+        type: string
       extra-args:
         description: "Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes."
         default: ""
@@ -124,6 +129,7 @@ jobs:
         with:
           image: ${{ inputs.image_name }}
           tags: ${{ env.tag }}-${{ matrix.architecture }}
+          build-args: ${{ inputs.build-args }}
           extra-args: "--no-cache --rm ${{ inputs.extra-args }}"
           archs: ${{ matrix.architecture }}
           labels: ${{ steps.meta.outputs.labels }}
