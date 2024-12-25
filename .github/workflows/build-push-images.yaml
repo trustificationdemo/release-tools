@@ -31,6 +31,11 @@ on:
         type: string
       context:
         description: "Path to directory to use as the build context."
+        default: "."
+        required: false
+        type: string
+      swap-size-gb:
+        description: "Swap space to create, in Gigabytes."
         default: ""
         required: false
         type: string
@@ -52,6 +57,28 @@ jobs:
       matrix:
         architecture: ${{ fromJSON(inputs.architectures) }}
     steps:
+      - name: Get more swap space
+        shell: bash
+        if: "${{ inputs.swap-size-gb != '' }}"
+        run: |
+          echo "Before swap"
+          free -h
+          swapon --show
+
+          # Make swap
+          SWAP_FILE="$(swapon --show=NAME | tail -n 1)"
+          export SWAP_FILE
+          sudo swapoff "${SWAP_FILE}"
+          sudo rm "${SWAP_FILE}"
+          sudo fallocate -l "${{ inputs.swap-size-gb }}"G "${SWAP_FILE}"
+          sudo chmod 600 "${SWAP_FILE}"
+          sudo mkswap "${SWAP_FILE}"
+          sudo swapon "${SWAP_FILE}"
+
+          echo "After swap"
+          free -h
+          swapon --show
+
       - name: Maximize disk space
         shell: bash
         run: |
@@ -74,7 +101,7 @@ jobs:
 
       - name: Image meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.registry }}/${{ inputs.image_name }}
           tags: |
@@ -93,7 +120,7 @@ jobs:
 
       - name: Build Image
         id: build
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@main
         with:
           image: ${{ inputs.image_name }}
           tags: ${{ env.tag }}-${{ matrix.architecture }}
@@ -104,7 +131,7 @@ jobs:
           context: ${{ inputs.context }}
 
       - name: Push To Registry
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@main
         id: push
         with:
           image: ${{ steps.build.outputs.image }}
@@ -118,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Log in to registry
-        uses: redhat-actions/podman-login@v1
+        uses: redhat-actions/podman-login@main
         with:
           username: ${{ secrets.registry_username }}
           password: ${{ secrets.registry_password }}
@@ -135,7 +162,7 @@ jobs:
           done
 
       - name: Push To Registry
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@main
         id: push
         with:
           image: ${{ inputs.image_name }}
