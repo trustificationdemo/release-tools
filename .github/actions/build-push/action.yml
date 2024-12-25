@@ -1,0 +1,85 @@
+name: "Build and Push Multi-Arch Image"
+description: "Builds and pushes a multiple architecture image manifest to a registry"
+inputs:
+  architectures:
+    description: "Comma separated list of architectures to build"
+    required: true
+  containerfile:
+    description: "Path to the Dockerfile or Containerfile to build"
+    required: true
+  build-args:
+    description: "Build args to be passed to buildah bud. Separate arguments by newline."
+    default: ""
+    required: false
+  extra-args:
+    description: "Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes."
+    required: false
+  image_name:
+    description: "Name of the image"
+    required: true
+  image_namespace:
+    description: "Image registry namespace"
+    required: true
+  image_registry:
+    description: "Image registry host"
+    required: true
+  registry_username:
+    description: "Registry username"
+    required: true
+  registry_password:
+    description: "Registry password"
+    required: true
+  pre_build_cmd:
+    description: "Command to run before building images"
+    required: false
+  tags:
+    description: "One or more tags to give the new image. Separate by whitespace"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Maximize disk space
+      shell: bash
+      run: |
+        echo "Space before clearing:"
+        df . -h
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        echo "Space after clearing:"
+        df . -h
+    - name: Checkout Push to Registry action
+      uses: actions/checkout@v4
+
+    - name: configure QEMU action...
+      uses: docker/setup-qemu-action@master
+      with:
+        platforms: all
+
+    - name: Run pre build command
+      shell: bash
+      run: "${{ inputs.pre_build_cmd }}"
+      if: "${{ inputs.pre_build_cmd != '' }}"
+
+    - name: Build Image
+      id: build
+      uses: redhat-actions/buildah-build@main
+      with:
+        image: ${{ inputs.image_name }}
+        tags: ${{ inputs.tags }}
+        build-args: ${{ inputs.build-args }}
+        extra-args: "--no-cache --rm ${{ inputs.extra-args }}"
+        archs: ${{ inputs.architectures }}
+        containerfiles: |
+          ${{ inputs.containerfile }}
+
+    - name: Push To Quay
+      uses: redhat-actions/push-to-registry@main
+      id: push
+      with:
+        image: ${{ steps.build.outputs.image }}
+        tags: ${{ inputs.tags }}
+        registry: ${{ inputs.image_registry }}/${{ inputs.image_namespace }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
