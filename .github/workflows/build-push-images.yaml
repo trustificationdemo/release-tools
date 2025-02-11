@@ -52,12 +52,28 @@ on:
         description: "Registry password"
         required: true
 
-env:
-  tag: ${{ github.ref == 'refs/heads/main' && 'latest' || github.ref_name }}
-
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.define-tag.outputs.tag }}
+    steps:
+      - name: Define & sanitize tag
+        id: define-tag
+        shell: bash
+        run: |
+          tag=${{ github.ref == 'refs/heads/main' && 'latest' || github.ref_name }}
+
+          # Replace "/" by "-" as "/" is not a valid character for a container tag
+          tag=${tag//\//-}
+          echo $tag
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [ prepare ]
+    runs-on: ubuntu-latest
+    env:
+      tag: ${{ needs.prepare.outputs.tag }}
     strategy:
       matrix:
         architecture: ${{ fromJSON(inputs.architectures) }}
@@ -147,8 +163,10 @@ jobs:
           registry: ${{ inputs.registry }}
 
   manifest:
-    needs: build
+    needs: [ prepare, build ]
     runs-on: ubuntu-latest
+    env:
+      tag: ${{ needs.prepare.outputs.tag }}
     steps:
       - name: Log in to registry
         uses: redhat-actions/podman-login@main
