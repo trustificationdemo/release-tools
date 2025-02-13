@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "pkg/action",
+    "pkg/pr",
+    "cmd/verify-pr",
+]
+
+[workspace.package]
+version = "0.1.1"
+edition = "2021"
+publish = false
+license = "Apache-2.0"
+
+[workspace.dependencies]
+envy = "0.4.2"
+serde = { version = "1" }
+serde_json = { version = "1" }
+regex = { version = "1" }
+tempfile = { version = "3" }
+
+action = { path = "./pkg/action" }
+pr = { path = "./pkg/pr" }
+
+[patch.crates-io]

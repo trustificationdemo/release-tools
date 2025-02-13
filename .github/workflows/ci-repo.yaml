@@ -1,0 +1,29 @@
+name: CI (repo level)
+
+on:
+  push:
+    branches:
+      - "main"
+      - "release/*"
+  pull_request:
+    branches:
+      - "main"
+      - "release/*"
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: Swatinem/rust-cache@v2
+      - name: Crate Format
+        run: cargo fmt --check
+      - name: Crate Check
+        run: cargo check
+      - name: Crate Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Crate Test
+        run: cargo test

@@ -1,0 +1,15 @@
+name: "Verify PR"
+description: Verify PRs for Trustification organization
+inputs:
+  github_token:
+    description: "the github_token provided by the actions runner"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Set up Rust
+      uses: Swatinem/rust-cache@v2
+    - name: Run verify
+      run: cd ${GITHUB_ACTION_PATH} && cargo run --bin verify-pr
+      shell: bash
+      
