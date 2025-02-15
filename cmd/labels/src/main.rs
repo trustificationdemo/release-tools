@@ -34,11 +34,11 @@ struct Update {
 )]
 struct Cli {
     /// Path to config.yaml
-    #[arg(short, long, default_value = "")]
+    #[arg(long, default_value = "")]
     config: String,
 
     /// Make mutating changes to labels via GitHub API
-    #[arg(short, long, default_value = "false")]
+    #[arg(long, default_value = "false")]
     confirm: bool,
 }
 

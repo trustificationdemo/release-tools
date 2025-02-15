@@ -10,6 +10,5 @@ runs:
     - name: Set up Rust
       uses: Swatinem/rust-cache@v2
     - name: Run verify
-      run: cd ${GITHUB_ACTION_PATH} && cargo run --bin verify-pr
+      run: cd ${GITHUB_ACTION_PATH} && RUST_LOG=info cargo run --bin verify-pr
       shell: bash
-      
