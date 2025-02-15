@@ -44,7 +44,7 @@ jobs:
                 const comment = comments.find(
                   (comment) =>
                     comment.user &&
-                    comment.user.login == "trustification-ci-bot[bot]" &&
+                    comment.user.login == "trustificationdemo-ci-bot[bot]" &&
                     comment.body &&
                     comment.body.includes(body)
                 );
@@ -170,4 +170,4 @@ jobs:
         uses: actions/add-to-project@v0.5.0
         with:
           github-token: ${{ steps.get_workflow_token.outputs.token }}
-          project-url: https://github.com/orgs/trustification/projects/67
+          project-url: https://github.com/orgs/trustificationdemo/projects/1
