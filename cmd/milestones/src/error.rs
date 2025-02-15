@@ -12,5 +12,8 @@ pub enum Error {
     Octocrab(#[from] octocrab::Error),
 
     #[error(transparent)]
+    SerdeJson(#[from] serde_json::Error),
+
+    #[error(transparent)]
     Any(#[from] anyhow::Error),
 }

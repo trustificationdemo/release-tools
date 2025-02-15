@@ -189,36 +189,55 @@ async fn exec() -> crate::error::Result<()> {
         return Ok(());
     }
 
+    // https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28
+    #[derive(Serialize, Debug)]
+    struct MilestonePayload {
+        title: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        description: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        state: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        due_on: Option<String>,
+    }
+
     for update in &updates {
         let milestone: octocrab::models::Milestone = match &update.why {
             Why::Missing(wanted_milestone) => {
+                let payload = serde_json::to_value(MilestonePayload {
+                    title: wanted_milestone.title.clone(),
+                    description: wanted_milestone.description.clone(),
+                    state: wanted_milestone.state.clone(),
+                    due_on: wanted_milestone.due.clone(),
+                })?;
+
                 let resp: octocrab::models::Milestone = client
                     .post(
                         format!("/repos/{}/{}/milestones", &update.org, &update.repo),
-                        Some(&json!({
-                            "title": wanted_milestone.title,
-                            "description": wanted_milestone.description,
-                            "state": wanted_milestone.state,
-                            "due_on": wanted_milestone.due
-                        })),
+                        Some(&payload),
                     )
                     .await?;
                 println!("Milestone created: {:?}", resp);
                 resp
             }
             Why::Changed(wanted_milestone, current_number, _current_milestone) => {
+                let payload = serde_json::to_value(MilestonePayload {
+                    title: wanted_milestone.title.clone(),
+                    description: wanted_milestone.description.clone(),
+                    state: wanted_milestone.state.clone(),
+                    due_on: wanted_milestone.due.clone(),
+                })?;
+
                 let resp: octocrab::models::Milestone = client
                     .patch(
                         &format!(
                             "/repos/{}/{}/milestones/{}",
                             &update.org, &update.repo, current_number
                         ),
-                        Some(&json!({
-                            "title": wanted_milestone.title,
-                            "description": wanted_milestone.description,
-                            "state": wanted_milestone.state,
-                            "due_on": wanted_milestone.due
-                        })),
+                        Some(&payload),
                     )
                     .await?;
                 println!("Milestone updated: {:?}", resp);
