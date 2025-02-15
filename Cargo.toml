@@ -26,8 +26,8 @@ regex = { version = "1" }
 tempfile = { version = "3" }
 clap = { version = "4" }
 octocrab = { version = "0.43" }
-tokio = { version = "1" }
 chrono = { version = "0.4" }
+tokio = { version = "1" }
 
 action = { path = "./pkg/action" }
 config = { path = "./pkg/config" }
