@@ -16,3 +16,5 @@ serde_yml = { workspace = true }
 octocrab = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
+
+[dev-dependencies]

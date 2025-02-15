@@ -78,4 +78,4 @@ jobs:
         run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml
       - env:
           GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
-        run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml -confirm
+        run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml --confirm

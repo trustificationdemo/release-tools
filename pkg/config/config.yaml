@@ -98,7 +98,6 @@ labels:
     description: This PR should be cherry-picked to release/0.2.z branch.
     name: cherry-pick/release/0.2.z
 
-#
 # Milestones
 # List of milestones, and their state, that should exist in the specified repositories.
 #
