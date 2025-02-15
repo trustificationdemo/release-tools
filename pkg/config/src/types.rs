@@ -33,7 +33,6 @@ pub struct Label {
 // Milestone holds declarative data about the milestone.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Milestone {
-    pub number: i64,
     pub title: String,
     pub description: Option<String>,
     pub state: Option<String>,
@@ -45,8 +44,8 @@ impl std::fmt::Display for Milestone {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "number: {:?}, title: {:?}, description: {:?}, state: {:?}, due: {:?}, replaces: {:?}",
-            self.number, self.title, self.description, self.state, self.due, self.replaces
+            "title: {:?}, description: {:?}, state: {:?}, due: {:?}, replaces: {:?}",
+            self.title, self.description, self.state, self.due, self.replaces
         )
     }
 }

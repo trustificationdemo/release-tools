@@ -16,8 +16,8 @@ mod error;
 enum Why {
     // Wanted
     Missing(Milestone),
-    // Wanted, Current
-    Changed(Milestone, Milestone),
+    // Wanted, CurrentNumber, Current
+    Changed(Milestone, i64, Milestone),
 }
 
 #[derive(Clone, Serialize)]
@@ -36,11 +36,11 @@ struct Update {
 )]
 struct Cli {
     /// Path to config.yaml
-    #[arg(short, long, default_value = "")]
+    #[arg(long, default_value = "")]
     config: String,
 
     /// Make mutating changes to labels via GitHub API
-    #[arg(short, long, default_value = "false")]
+    #[arg(long, default_value = "false")]
     confirm: bool,
 }
 
@@ -157,12 +157,12 @@ async fn exec() -> crate::error::Result<()> {
                             repo: repo.repo.clone(),
                             why: Why::Changed(
                                 want_milestone.clone(),
+                                existing_milestone.number,
                                 Milestone {
                                     title: existing_milestone.title.clone(),
                                     description: existing_milestone.description.clone(),
                                     state: existing_milestone.state.clone(),
                                     due: existing_milestone_due.clone(),
-                                    number: existing_milestone.number,
                                     replaces: None,
                                 },
                             ),
@@ -206,12 +206,12 @@ async fn exec() -> crate::error::Result<()> {
                 println!("Milestone created: {:?}", resp);
                 resp
             }
-            Why::Changed(wanted_milestone, current_milestone) => {
+            Why::Changed(wanted_milestone, current_number, _current_milestone) => {
                 let resp: octocrab::models::Milestone = client
                     .patch(
                         &format!(
                             "/repos/{}/{}/milestones/{}",
-                            &update.org, &update.repo, &current_milestone.number
+                            &update.org, &update.repo, current_number
                         ),
                         Some(&json!({
                             "title": wanted_milestone.title,
