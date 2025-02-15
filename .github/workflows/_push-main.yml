@@ -48,8 +48,8 @@ jobs:
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v3
         with:
-          application_id: ${{ vars.TRUSTIFICATIONBOT_ID }}
-          application_private_key: ${{ secrets.TRUSTIFICATIONBOT_KEY }}
+          application_id: ${{ vars.TRUSTIFICATION_BOT_ID }}
+          application_private_key: ${{ secrets.TRUSTIFICATION_BOT_KEY }}
       - env:
           GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         run: RUST_LOG=info cargo run --bin milestones -- --config pkg/config/config.yaml
@@ -71,8 +71,8 @@ jobs:
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v3
         with:
-          application_id: ${{ vars.TRUSTIFICATIONBOT_ID }}
-          application_private_key: ${{ secrets.TRUSTIFICATIONBOT_KEY }}
+          application_id: ${{ vars.TRUSTIFICATION_BOT_ID }}
+          application_private_key: ${{ secrets.TRUSTIFICATION_BOT_KEY }}
       - env:
           GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml
