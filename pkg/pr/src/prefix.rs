@@ -4,15 +4,14 @@
 use core::fmt;
 use regex::Regex;
 
+use crate::error::Result;
+
 const PREFIX_FEATURE: (&str, &str) = (":sparkles:", "✨");
 const PREFIX_BUG_FIX: (&str, &str) = (":bug:", "🐛");
 const PREFIX_DOCS: (&str, &str) = (":book:", "📖");
 const PREFIX_INFRA: (&str, &str) = (":seedling:", "🌱");
 const PREFIX_BREAKING: (&str, &str) = (":warning:", "⚠");
 const PREFIX_NO_NOTE: (&str, &str) = (":ghost:", "👻");
-
-// Title, Emoji
-pub type PRTypeError = (String, Option<String>);
 
 #[derive(Debug, PartialEq)]
 pub enum PRType {
@@ -38,7 +37,7 @@ impl fmt::Display for PRType {
 }
 
 impl PRType {
-    pub fn from_title(value: &str) -> Result<Self, PRTypeError> {
+    pub fn from_title(value: &str) -> Result<Self> {
         let wip_regex = Regex::new(r"(?i)^\W?WIP\W").unwrap();
         let tag_regex = Regex::new(r"^\[[\w.-]*]").unwrap();
 
@@ -53,7 +52,10 @@ impl PRType {
         let value = value.trim();
 
         if value.is_empty() {
-            return Err((value.to_string(), None));
+            return Err(crate::error::Error::InvalidTitle {
+                title: value.to_string(),
+                emoji: None,
+            });
         }
 
         // Trusting those that came before...
@@ -90,9 +92,15 @@ impl PRType {
             || value.strip_prefix(PREFIX_NO_NOTE.1).is_some()
         {
             let emoji = value.chars().next().map(|c| c.to_string());
-            return Err((trust(value), emoji));
+            return Err(crate::error::Error::InvalidTitle {
+                title: trust(value),
+                emoji,
+            });
         } else {
-            return Err((trust(value), None));
+            return Err(crate::error::Error::InvalidTitle {
+                title: trust(value),
+                emoji: None,
+            });
         }
     }
 
@@ -110,11 +118,11 @@ impl PRType {
 
 #[cfg(test)]
 mod tests {
-    use crate::prefix::{PRType, PRTypeError};
+    use crate::{error::Result, prefix::PRType};
 
     struct TestCase {
         pub title: &'static str,
-        pub expected_result: Result<PRType, PRTypeError>,
+        pub expected_result: Result<PRType>,
     }
 
     #[test]
@@ -122,7 +130,10 @@ mod tests {
         let test_cases = vec![
             TestCase {
                 title: "WIP: [docs] Update documentation",
-                expected_result: Err(("Update documentation".to_string(), None)),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "Update documentation".to_string(),
+                    emoji: None,
+                }),
             },
             TestCase {
                 title: "WIP: :sparkles: Add new feature",
@@ -146,19 +157,31 @@ mod tests {
             },
             TestCase {
                 title: "WIP: No prefix in title",
-                expected_result: Err(("No prefix in title".to_string(), None)),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "No prefix in title".to_string(),
+                    emoji: None,
+                }),
             },
             TestCase {
                 title: "No prefix in title",
-                expected_result: Err(("No prefix in title".to_string(), None)),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "No prefix in title".to_string(),
+                    emoji: None,
+                }),
             },
             TestCase {
                 title: "WIP:",
-                expected_result: Err(("".to_string(), None)),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "".to_string(),
+                    emoji: None,
+                }),
             },
             TestCase {
                 title: "",
-                expected_result: Err(("".to_string(), None)),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "".to_string(),
+                    emoji: None,
+                }),
             },
             TestCase {
                 title: "WIP: [tag] :sparkles: Add new feature",
@@ -166,10 +189,10 @@ mod tests {
             },
             TestCase {
                 title: "👻 I should have used the alias",
-                expected_result: Err((
-                    "👻 I should have used the alias".to_string(),
-                    Some("👻".to_string()),
-                )),
+                expected_result: Err(crate::error::Error::InvalidTitle {
+                    title: "👻 I should have used the alias".to_string(),
+                    emoji: Some("👻".to_string()),
+                }),
             },
         ];
 

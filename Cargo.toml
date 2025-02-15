@@ -2,7 +2,10 @@
 resolver = "2"
 members = [
     "pkg/action",
+    "pkg/config",
     "pkg/pr",
+    "cmd/labels",
+    "cmd/milestones",
     "cmd/verify-pr",
 ]
 
@@ -13,13 +16,21 @@ publish = false
 license = "Apache-2.0"
 
 [workspace.dependencies]
-envy = "0.4.2"
+anyhow = { version = "1" }
+thiserror = { version = "2" }
+envy = { version = "0.4" }
 serde = { version = "1" }
 serde_json = { version = "1" }
+serde_yml = { version = "0.0.12" }
 regex = { version = "1" }
 tempfile = { version = "3" }
+clap = { version = "4" }
+octocrab = { version = "0.43" }
+tokio = { version = "1" }
+chrono = { version = "0.4" }
 
 action = { path = "./pkg/action" }
+config = { path = "./pkg/config" }
 pr = { path = "./pkg/pr" }
 
 [patch.crates-io]

@@ -1,16 +1,10 @@
-name: CI (repo level)
+name: PR tests
 
 on:
-  push:
-    branches:
-      - "main"
-      - "release/*"
   pull_request:
-    branches:
-      - "main"
-      - "release/*"
-  workflow_dispatch:
-  workflow_call:
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
 
 jobs:
   ci:
