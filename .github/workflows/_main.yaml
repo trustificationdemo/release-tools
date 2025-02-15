@@ -52,8 +52,7 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Rust
-        uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
       - run: RUST_LOG=info cargo run --bin milestones -- --config pkg/config/config.yaml
 
   check-labels:
@@ -65,6 +64,5 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Rust
-        uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
       - run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml
