@@ -1,7 +1,9 @@
-use action::context::vars_from_env;
-use pr::prefix::{PRType, PRTypeError};
+use action::context::GitHubVariables;
+use pr::prefix::PRType;
 use serde::Deserialize;
 use std::fs;
+
+mod error;
 
 #[derive(Debug, Deserialize)]
 struct Event {
@@ -13,15 +15,18 @@ struct PullRequestEvent {
     title: String,
 }
 
-fn main() -> Result<(), PRTypeError> {
-    let gh_context = vars_from_env().expect("Failed to get github env vars");
+fn main() -> error::Result<()> {
+    let gh_context = GitHubVariables::from_env()?;
 
     // Parse the event
-    let event_file =
-        fs::read_to_string(gh_context.github_event_path).expect("Unable to read github event file");
+    let event_file = fs::read_to_string(gh_context.github_event_path)?;
 
-    let event: Event =
-        serde_json::from_str(&event_file).expect("unable to unmarshal PullRequest event");
+    let event: Event = serde_json::from_str(&event_file).map_err(|err| {
+        crate::error::Error::UnmarshalPullRequest {
+            file_path: event_file,
+            err,
+        }
+    })?;
 
     // Check the title of the PR
     let pr_type = PRType::from_title(&event.pull_request.title)?;

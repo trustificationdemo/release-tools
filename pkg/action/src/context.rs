@@ -1,5 +1,6 @@
-use envy::Error;
 use serde::Deserialize;
+
+use crate::error::Result;
 
 #[derive(Deserialize, Debug)]
 pub struct GitHubVariables {
@@ -9,6 +10,9 @@ pub struct GitHubVariables {
     pub github_event_path: String,
 }
 
-pub fn vars_from_env() -> Result<GitHubVariables, Error> {
-    envy::from_env::<GitHubVariables>()
+impl GitHubVariables {
+    pub fn from_env() -> Result<Self> {
+        let result = envy::from_env::<GitHubVariables>()?;
+        Ok(result)
+    }
 }

@@ -1,0 +1,68 @@
+name: PR tests
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      config: ${{ steps.filter.outputs.config }}
+      milestone: ${{ steps.filter.outputs.milestone }}
+      labels: ${{ steps.filter.outputs.labels }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            config:
+              - "pkg/config/config.yaml"
+            milestone:
+              - "cmd/milestones/**"
+            labels:
+              - "cmd/labels/**"
+
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: Swatinem/rust-cache@v2
+      - name: Crate Format
+        run: cargo fmt --check
+      - name: Crate Check
+        run: cargo check
+      - name: Crate Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Crate Test
+        run: cargo test
+
+  check-milestones:
+    needs: build
+    if: ${{ needs.build.outputs.config == 'true' || needs.build.outputs.milestone == 'true' }}
+    runs-on: ubuntu-latest
+    permissions: read-all
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: RUST_LOG=info cargo run --bin milestones -- --config pkg/config/config.yaml
+
+  check-labels:
+    needs: build
+    if: ${{ needs.build.outputs.config == 'true' || needs.build.outputs.milestone == 'true' }}
+    runs-on: ubuntu-latest
+    permissions: read-all
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: RUST_LOG=info cargo run --bin labels -- --config pkg/config/config.yaml
