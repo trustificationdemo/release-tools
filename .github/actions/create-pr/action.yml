@@ -1,0 +1,41 @@
+name: Create Pull Request
+description: Action to create pull requests
+
+inputs:
+  path:
+    required: true
+    description: Relative path under GITHUB_WORKSPACE to the repository.
+  commit-message:
+    required: true
+    description: The message to use when committing changes
+  title:
+    required: true
+    description: The title of the pull request.
+  body:
+    required: false
+    description: The body of the pull request.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Token
+      id: get_workflow_token
+      uses: peter-murray/workflow-application-token-action@v3
+      with:
+        application_id: ${{ env.TRUSTIFICATION_BOT_ID }}
+        application_private_key: ${{ env.TRUSTIFICATION_BOT_KEY }}
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      id: pr
+      with:
+        token: ${{ steps.get_workflow_token.outputs.token }}
+        path: ${{ inputs.path }}
+        commit-message: "update client/openapi/trustd.yaml"
+        signoff: true
+        branch-suffix: short-commit-hash
+        title: ${{ inputs.title }}
+        body: ${{ inputs.body }}
+    - name: PR Notifications
+      shell: bash
+      run: |
+        echo "::notice:: Pull Request URL - ${{ steps.pr.outputs.pull-request-url }}"
