@@ -108,9 +108,9 @@ labels:
 #     due:
 #
 milestones:
-  - title: v0.2.0
+  - title: Trustify 2.0.0
     description: The v0.2.0 release of Trustify
     state: open
-  - title: Next
+  - title: Trustify 2.1.0
     description: Bucket for work we want to accomplish in the next release
     state: open
