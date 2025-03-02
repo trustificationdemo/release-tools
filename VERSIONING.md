@@ -28,6 +28,8 @@ In order to maintain our guarantees two types of branches will be maintained:
   stable. These branches will receive backport fixes for critical issues, but no
   new features will be added.
 
+# Test multicommit
+
 # Releases
 
 All releases from the main branch will be marked as pre-release and be of the
