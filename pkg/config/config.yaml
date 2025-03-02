@@ -10,21 +10,21 @@
 #   - org: the organization of the repo
 #     repo: the repo
 repos:
-  - org: trustification
+  - org: trustificationdemo
     repo: trustification.github.io
-  - org: trustification
+  - org: trustificationdemo
     repo: release-tools
-  - org: trustification
+  - org: trustificationdemo
     repo: trustify-operator
-  # - org: trustification
-  #   repo: trustify-helm-charts
-  # - org: trustification
-  #   repo: trustify
-  - org: trustification
+  - org: trustificationdemo
+    repo: trustify-helm-charts
+  - org: trustificationdemo
+    repo: trustify
+  - org: trustificationdemo
     repo: trustify-ui
-  - org: trustification
+  - org: trustificationdemo
     repo: trustify-ui-tests
-  - org: trustification
+  - org: trustificationdemo
     repo: trustify-api-tests
 
 # Labels

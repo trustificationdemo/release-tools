@@ -170,4 +170,4 @@ jobs:
         uses: actions/add-to-project@v1.0.2
         with:
           github-token: ${{ steps.get_workflow_token.outputs.token }}
-          project-url: https://github.com/orgs/trustification/projects/7
+          project-url: https://github.com/orgs/trustificationdemo/projects/1
