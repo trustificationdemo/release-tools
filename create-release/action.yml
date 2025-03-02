@@ -1,0 +1,85 @@
+name: Create Release
+description: Create a release in a project
+inputs:
+  github_token:
+    description: 'GitHub token'
+    required: true
+  version:
+    description: 'Semantic version of the release (eg. v1.2.3 or v1.2.3-alpha.2)'
+    required: true
+  prev_version:
+    description: 'Semantic version of the previous release (eg. v1.2.2 or v1.2.3-alpha.1)'
+    required: false
+    default: ''
+  repository:
+    description: 'The repository where the release should be created'
+    required: false
+    default: ${{ github.repository }}
+  ref:
+    description: 'The branch or SHA for the release (defaults to main)'
+    required: false
+    default: ${{ github.ref }}
+  is_prerelease:
+    description: 'Is this a pre-release?'
+    required: false
+    default: "false" 
+
+runs:
+  using: "composite"
+  steps:
+  - name: Verify tag is semver
+    shell: bash
+    run: |
+      set -x
+      if [[ ! "${{ inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+        echo "This is not a semver compliant tag"
+        echo "Exiting"
+        exit 1
+      fi
+
+      if [[ "${{ inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "is_prerelease=false" >> $GITHUB_OUTPUT
+      else
+        echo "is_prerelease=true" >> $GITHUB_OUTPUT
+      fi
+
+      if [[ "${{ inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.0$ ]]; then
+        echo "is_dotzero=true" >> $GITHUB_OUTPUT
+      else
+        echo "is_dotzero=false" >> $GITHUB_OUTPUT
+      fi
+
+      XY_VERSION=$(echo ${{ inputs.version }} | awk -F. '{print substr($1,2)"."$2}')
+      echo "xy_version=${XY_VERSION}" >> $GITHUB_OUTPUT
+    id: check_tag
+
+  - name: Checkout code
+    uses: actions/checkout@v4
+
+  - name: Generate Changelog
+    uses: ./.github/workflows/generate-changelog.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+      prev_version: ${{ github.event.inputs.prev_version }}
+      repository: ${{ github.event.inputs.repository }}
+      ref: ${{ github.event.inputs.ref }}
+      github_token: ${{ inputs.github_token }}
+
+  - name: Download Changelog
+    uses: actions/download-artifact@v4
+    with:
+      name: changelog-artifact
+      path: .
+
+
+  - uses: ncipollo/release-action@main
+    with:
+      owner: ${{ github.repository_owner }}
+      repo: ${{ inputs.repository }}
+      tag: ${{ inputs.version }}
+      commit: ${{ github.sha }}
+      bodyFile: release.md
+      draft: false
+      prerelease: ${{ inputs.is_prerelease }}
+      skipIfReleaseExists: true
+      token: ${{ inputs.github_token }}
