@@ -1,6 +1,6 @@
 # Versioning and Branching in Trustification
-
-This document outlines how we handle versioning in the Trustification
+sdfds
+This document outlinsfes how we handle versioning in the Trustification
 organization.
 
 Individual projects inside the Trustification organization may have more specific
