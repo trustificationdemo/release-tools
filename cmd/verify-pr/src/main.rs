@@ -16,6 +16,15 @@ struct PullRequestEvent {
 }
 
 fn main() -> error::Result<()> {
+    let result = verify_pr();
+    match &result {
+        Ok(_) => {}
+        Err(error) => println!("{error}"),
+    };
+    result
+}
+
+fn verify_pr() -> error::Result<()> {
     let gh_context = GitHubVariables::from_env()?;
 
     // Parse the event

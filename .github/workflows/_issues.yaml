@@ -14,9 +14,9 @@ on:
       - created
       - edited
 
-concurrency:
-  group: reconcile-issue-${{ github.event.issue.number }}-${{ github.event_name }}
-  cancel-in-progress: true
+# concurrency:
+#   group: reconcile-issue-${{ github.event.issue.number }}-${{ github.event_name }}
+#   cancel-in-progress: true
 
 jobs:
   reconcile-issue:
